@@ -1,65 +1,64 @@
-import { useEffect, useMemo, useState } from 'react'
-import { NavLink, Route, Routes } from 'react-router-dom'
-import { useSpotifyAuth } from './hooks/useSpotifyAuth'
-import Home from './routes/Home'
-import Generator from './routes/Generator'
-import { buttonGhost } from './lib/styles'
+import { useEffect, useMemo, useState } from "react";
+import { NavLink, Route, Routes } from "react-router-dom";
+import { useSpotifyAuth } from "./hooks/useSpotifyAuth";
+import Home from "./routes/Home";
+import Generator from "./routes/Generator";
+import { buttonGhost } from "./lib/styles";
 
 type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-}
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
 
 function App() {
-  const { token, isAuthorizing, authError, login, logout } = useSpotifyAuth()
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const stored = localStorage.getItem('dw3-theme')
-    if (stored === 'dark' || stored === 'light') return stored
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light'
-  })
+  const { token, isAuthorizing, authError, login, logout } = useSpotifyAuth();
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    const stored = localStorage.getItem("dw3-theme");
+    if (stored === "dark" || stored === "light") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
   const navBase =
-    'text-[0.65rem] font-semibold uppercase tracking-[0.28em] transition'
+    "text-[0.65rem] font-semibold uppercase tracking-[0.28em] transition";
   const navIdle =
-    'text-black hover:text-black dark:text-slate-400 dark:hover:text-white'
-  const navActive = 'text-black dark:text-white'
+    "text-black hover:text-black dark:text-slate-400 dark:hover:text-white";
+  const navActive = "text-black dark:text-white";
   const [installPrompt, setInstallPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null)
-  const [showIosInstall, setShowIosInstall] = useState(false)
+    useState<BeforeInstallPromptEvent | null>(null);
+  const [showIosInstall, setShowIosInstall] = useState(false);
   const isIos = useMemo(() => {
-    const platform =
-      navigator.userAgent || navigator.vendor || (window as Window).opera
-    return /iPad|iPhone|iPod/.test(platform)
-  }, [])
+    const userAgent = navigator.userAgent || navigator.vendor;
+    return /iPad|iPhone|iPod/.test(userAgent);
+  }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    localStorage.setItem('dw3-theme', theme)
-  }, [theme])
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("dw3-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleBeforeInstall = (event: Event) => {
-      event.preventDefault()
-      setInstallPrompt(event as BeforeInstallPromptEvent)
-    }
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
-    }
-  }, [])
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+    };
+  }, []);
 
   const handleInstall = async () => {
     if (installPrompt) {
-      await installPrompt.prompt()
-      await installPrompt.userChoice
-      setInstallPrompt(null)
-      return
+      await installPrompt.prompt();
+      await installPrompt.userChoice;
+      setInstallPrompt(null);
+      return;
     }
     if (isIos) {
-      setShowIosInstall((current) => !current)
+      setShowIosInstall((current) => !current);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen">
@@ -103,21 +102,21 @@ function App() {
           )}
           <button
             type="button"
-            aria-pressed={theme === 'dark'}
+            aria-pressed={theme === "dark"}
             onClick={() =>
-              setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
+              setTheme((current) => (current === "dark" ? "light" : "dark"))
             }
             className="flex items-center gap-3 rounded-full border border-emerald-400 bg-white/80 px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-emerald-800 transition hover:border-emerald-500 hover:text-emerald-900 hover:bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:border-emerald-500 dark:hover:text-white dark:hover:bg-emerald-900/50"
           >
             <span>Theme</span>
             <span
               className={`relative h-5 w-10 rounded-full border border-emerald-200 bg-emerald-50 transition dark:border-emerald-700 dark:bg-emerald-950 ${
-                theme === 'dark' ? 'border-emerald-400 bg-emerald-900/60' : ''
+                theme === "dark" ? "border-emerald-400 bg-emerald-900/60" : ""
               }`}
             >
               <span
                 className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-[#1DB954] shadow transition ${
-                  theme === 'dark' ? 'left-5' : 'left-1'
+                  theme === "dark" ? "left-5" : "left-1"
                 }`}
               />
             </span>
@@ -149,7 +148,10 @@ function App() {
 
       <main className="mx-auto max-w-6xl px-6 pb-16">
         <Routes>
-          <Route path="/" element={<Home isAuthed={!!token} onLogin={login} />} />
+          <Route
+            path="/"
+            element={<Home isAuthed={!!token} onLogin={login} />}
+          />
           <Route
             path="/generator"
             element={
@@ -167,7 +169,7 @@ function App() {
         <p>Built with Spotify Web API. Client-only PKCE flow.</p>
       </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
