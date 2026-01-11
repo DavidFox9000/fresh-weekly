@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useSpotifyAuth } from './hooks/useSpotifyAuth'
 import Home from './routes/Home'
 import Generator from './routes/Generator'
 import { buttonGhost } from './lib/styles'
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
 
 function App() {
   const { token, isAuthorizing, authError, login, logout } = useSpotifyAuth()
@@ -19,11 +24,42 @@ function App() {
   const navIdle =
     'text-black hover:text-black dark:text-slate-400 dark:hover:text-white'
   const navActive = 'text-black dark:text-white'
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null)
+  const [showIosInstall, setShowIosInstall] = useState(false)
+  const isIos = useMemo(() => {
+    const platform =
+      navigator.userAgent || navigator.vendor || (window as Window).opera
+    return /iPad|iPhone|iPod/.test(platform)
+  }, [])
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
     localStorage.setItem('dw3-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    const handleBeforeInstall = (event: Event) => {
+      event.preventDefault()
+      setInstallPrompt(event as BeforeInstallPromptEvent)
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+    }
+  }, [])
+
+  const handleInstall = async () => {
+    if (installPrompt) {
+      await installPrompt.prompt()
+      await installPrompt.userChoice
+      setInstallPrompt(null)
+      return
+    }
+    if (isIos) {
+      setShowIosInstall((current) => !current)
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -86,8 +122,22 @@ function App() {
               />
             </span>
           </button>
+          {(installPrompt || isIos) && (
+            <button className={buttonGhost} onClick={handleInstall}>
+              Add to Home
+            </button>
+          )}
         </nav>
       </header>
+
+      {showIosInstall && (
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-950/50 dark:text-emerald-100">
+            On iPhone: tap the Share button in Safari, then choose "Add to Home
+            Screen."
+          </div>
+        </div>
+      )}
 
       {authError && (
         <div className="mx-auto max-w-6xl px-6">
