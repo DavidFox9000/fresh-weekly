@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: #171717;
+    background: radial-gradient(circle at top left, #f3e7d0 0%, #e6ece3 45%, #f0e9dc 100%);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .dark body {
+    color: #e5e7eb;
+    background: radial-gradient(circle at top left, #1e2a1f 0%, #121614 45%, #0c0f0d 100%);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    max-width: 100%;
+    display: block;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+}
